@@ -243,6 +243,21 @@ export const initialHolidays = [
 
 export const initialVersionLogs = [
   {
+    version: "v2.8.0",
+    date: "01 Oktober 2026",
+    tag: "Fitur Baru",
+    title: "Sinkronisasi Cloud 14 Tabel, Cadangan & Restore JSON, dan Peningkatan Tampilan Stat Cards",
+    details: [
+      "Pusat Cadangan & Pemulihan Basis Data (Backup & Restore JSON) untuk arsip offline lengkap seluruh 14 entitas data.",
+      "Tombol Cepat Sinkronisasi Cloud (Upload & Tarik Data Online) di Header, Dashboard, dan Master Data.",
+      "Penyempurnaan Modal Popup Sinkronisasi ke tengah layar (Center Alignment) menggunakan React Portal.",
+      "Redesain 4 Stat Cards di Dashboard dengan aksen gradien warna modern, glow blur, dan tipografi tebal.",
+      "Penyederhanaan singkatan predikat absensi semester (SB, B, C, PP) dilengkapi kartu catatan legenda keterangan.",
+      "Penggabungan kolom bukti dokumentasi dan link Drive pada Berita Acara Rekap Kunjungan Rumah (Home Visit).",
+      "Pembersihan navigasi Master Data dan optimasi integrasi GitHub & Vercel deployment."
+    ]
+  },
+  {
     version: "v2.7.0",
     date: "01 Oktober 2026",
     tag: "Desktop & UI",

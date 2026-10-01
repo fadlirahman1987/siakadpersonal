@@ -276,7 +276,7 @@ export const SettingsView = () => {
       setIsExportingJson(true);
       const backupPayload = {
         app_name: "SIAKAD Personal",
-        app_version: "v2.7.0",
+        app_version: "v2.8.0",
         export_timestamp: new Date().toISOString(),
         export_date_readable: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'long' }),
         academic_period: {
@@ -3488,7 +3488,7 @@ CREATE POLICY "Allow anon all on walas_monthly_attendance" ON walas_monthly_atte
                   <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
                     <span>Catatan Pembaruan & Version Log</span>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                      Rilis Aktif: v2.7.0
+                      Rilis Aktif: v2.8.0
                     </span>
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">

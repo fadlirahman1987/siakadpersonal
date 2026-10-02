@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { ModalDrawer } from '../components/common/ModalDrawer';
 import {
   Calendar,
   Clock,
@@ -19,7 +20,12 @@ import {
   MapPin,
   ArrowRight,
   Sparkles,
-  FileText
+  FileText,
+  Download,
+  ExternalLink,
+  Tag,
+  AlertCircle,
+  Check
 } from 'lucide-react';
 
 export const DashboardView = () => {
@@ -41,8 +47,109 @@ export const DashboardView = () => {
     isSyncingToCloud,
     isSyncingFromCloud,
     isSupabaseConfigured,
-    lastSyncTime
+    lastSyncTime,
+    versionLogs,
+    showToast
   } = useApp();
+
+  // App Version State & Update Checker
+  const currentVersion = versionLogs?.[0]?.version || 'v2.9.0';
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [updateResult, setUpdateResult] = useState({
+    checked: false,
+    hasUpdate: false,
+    latestVersion: currentVersion,
+    currentVersion: currentVersion,
+    releaseNotes: '',
+    releaseDate: '',
+    downloadUrl: 'https://github.com/fadlirahman1987/siakadpersonal/releases',
+    error: null
+  });
+
+  const handleCheckUpdate = async () => {
+    setIsCheckingUpdate(true);
+    setIsUpdateModalOpen(true);
+    setUpdateResult({
+      checked: false,
+      hasUpdate: false,
+      latestVersion: currentVersion,
+      currentVersion: currentVersion,
+      releaseNotes: '',
+      releaseDate: '',
+      downloadUrl: 'https://github.com/fadlirahman1987/siakadpersonal/releases',
+      error: null
+    });
+
+    try {
+      const response = await fetch('https://api.github.com/repos/fadlirahman1987/siakadpersonal/releases/latest', {
+        headers: { Accept: 'application/vnd.github.v3+json' }
+      });
+
+      if (response.status === 404) {
+        setUpdateResult({
+          checked: true,
+          hasUpdate: false,
+          latestVersion: currentVersion,
+          currentVersion: currentVersion,
+          releaseNotes: 'Belum ada rilis publik di GitHub Releases. Versi yang Anda jalankan adalah versi pembangunan terkini.',
+          releaseDate: 'Terbaru',
+          downloadUrl: 'https://github.com/fadlirahman1987/siakadpersonal/releases',
+          error: null
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Gagal menghubungi server rilis GitHub (Status: ${response.status})`);
+      }
+
+      const data = await response.json();
+      const remoteTag = data.tag_name || data.name || '';
+      const cleanRemote = remoteTag.replace(/^v/, '').trim();
+      const cleanCurrent = currentVersion.replace(/^v/, '').trim();
+
+      // Check if remote version is strictly different from local version
+      const hasNewVersion = cleanRemote && cleanRemote !== cleanCurrent;
+
+      const exeAsset = data.assets?.find(a => 
+        a.name.endsWith('.exe') || a.name.endsWith('.msi') || a.name.endsWith('.zip')
+      );
+      const downloadLink = exeAsset?.browser_download_url || data.html_url || 'https://github.com/fadlirahman1987/siakadpersonal/releases';
+
+      setUpdateResult({
+        checked: true,
+        hasUpdate: hasNewVersion,
+        latestVersion: remoteTag || currentVersion,
+        currentVersion: currentVersion,
+        releaseNotes: data.body || 'Tidak ada catatan rilis.',
+        releaseDate: data.published_at 
+          ? new Date(data.published_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+          : '',
+        downloadUrl: downloadLink,
+        error: null
+      });
+
+      if (hasNewVersion) {
+        showToast(`Pembaruan versi ${remoteTag} tersedia!`, 'info');
+      } else {
+        showToast(`Aplikasi sudah dalam versi terbaru (${currentVersion}).`, 'success');
+      }
+    } catch (err) {
+      setUpdateResult({
+        checked: true,
+        hasUpdate: false,
+        latestVersion: currentVersion,
+        currentVersion: currentVersion,
+        releaseNotes: '',
+        releaseDate: '',
+        downloadUrl: 'https://github.com/fadlirahman1987/siakadpersonal/releases',
+        error: err.message || 'Koneksi internet bermasalah saat memeriksa server rilis.'
+      });
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  };
 
   // Summary statistics
   const totalClasses = classes.length;
@@ -271,12 +378,34 @@ export const DashboardView = () => {
 
         {/* Right Column (5 cols): Quick Action Launcher */}
         <div className="lg:col-span-5 space-y-3">
-          <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100 px-1">Aksi Cepat Guru</h3>
+          {/* Header Aksi Cepat + Versi App & Tombol Cek Update */}
+          <div className="flex items-center justify-between px-1 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">Aksi Cepat Guru</h3>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                <Tag size={11} />
+                <span>{currentVersion}</span>
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCheckUpdate}
+              disabled={isCheckingUpdate}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer"
+              title="Periksa ketersediaan pembaruan versi baru di GitHub"
+            >
+              <RefreshCw size={13} className={isCheckingUpdate ? 'animate-spin text-emerald-600 dark:text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'} />
+              <span>{isCheckingUpdate ? 'Memeriksa...' : 'Cek Update'}</span>
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             
             <button
               onClick={() => {
                 setSelectedScheduleId(1);
+                setAttendanceSubTab('attendance');
                 setActiveTab('attendance');
               }}
               className="flex flex-col items-center justify-center p-4 rounded-2xl glass-card hover:bg-slate-100 dark:hover:bg-slate-800/80 text-center transition-all active:scale-95 group"
@@ -291,6 +420,7 @@ export const DashboardView = () => {
             <button
               onClick={() => {
                 setSelectedScheduleId(1);
+                setAttendanceSubTab('grades');
                 setActiveTab('attendance');
               }}
               className="flex flex-col items-center justify-center p-4 rounded-2xl glass-card hover:bg-slate-100 dark:hover:bg-slate-800/80 text-center transition-all active:scale-95 group"
@@ -391,6 +521,150 @@ export const DashboardView = () => {
         </div>
 
       </div>
+
+      {/* Modal Pemeriksaan Pembaruan Aplikasi */}
+      <ModalDrawer
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        title="Pembaruan Aplikasi SIAKAD"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4 text-slate-800 dark:text-slate-200">
+          
+          {/* State 1: Checking in progress */}
+          {isCheckingUpdate && (
+            <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
+              <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <RefreshCw size={32} className="animate-spin" />
+              </div>
+              <h4 className="font-extrabold text-base text-slate-900 dark:text-white">Memeriksa Versi Terbaru...</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+                Menghubungkan ke repositori GitHub untuk mendeteksi rilis installer resmi terbaru.
+              </p>
+            </div>
+          )}
+
+          {/* State 2: Error Connection */}
+          {!isCheckingUpdate && updateResult.error && (
+            <div className="space-y-3">
+              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-start gap-3">
+                <AlertCircle size={20} className="text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                <div className="text-xs space-y-1">
+                  <p className="font-bold text-rose-800 dark:text-rose-300">Gagal Memeriksa Rilis</p>
+                  <p className="text-rose-700 dark:text-rose-400/90">{updateResult.error}</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                <span>Versi Terpasang:</span>
+                <span className="font-bold text-slate-900 dark:text-white">{currentVersion}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCheckUpdate}
+                className="w-full py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RefreshCw size={14} />
+                <span>Coba Periksa Ulang</span>
+              </button>
+            </div>
+          )}
+
+          {/* State 3: Update Available */}
+          {!isCheckingUpdate && !updateResult.error && updateResult.hasUpdate && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/50 text-center space-y-2">
+                <div className="inline-flex p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 mb-1">
+                  <Sparkles size={24} />
+                </div>
+                <h4 className="font-black text-base text-emerald-900 dark:text-emerald-200">
+                  Pembaruan Baru Tersedia!
+                </h4>
+                <div className="flex items-center justify-center gap-2 text-xs font-bold pt-1">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    {currentVersion}
+                  </span>
+                  <ArrowRight size={14} className="text-emerald-600" />
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-sm">
+                    {updateResult.latestVersion}
+                  </span>
+                </div>
+                {updateResult.releaseDate && (
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                    Dirilis pada: {updateResult.releaseDate}
+                  </p>
+                )}
+              </div>
+
+              {/* Release Notes */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Catatan Pembaruan:
+                </label>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono max-h-36 overflow-y-auto whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-300">
+                  {updateResult.releaseNotes}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-1">
+                <a
+                  href={updateResult.downloadUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+                >
+                  <Download size={15} />
+                  <span>Unduh Rilis Versi {updateResult.latestVersion}</span>
+                </a>
+                <a
+                  href="https://github.com/fadlirahman1987/siakadpersonal/releases"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <ExternalLink size={14} />
+                  <span>Lihat di Halaman GitHub Releases</span>
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* State 4: Already Up to Date */}
+          {!isCheckingUpdate && !updateResult.error && !updateResult.hasUpdate && (
+            <div className="py-4 text-center space-y-3 animate-fade-in">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/25">
+                <Check size={28} />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-base text-slate-900 dark:text-white">
+                  Aplikasi Sudah Versi Terbaru
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">
+                  Anda sedang menjalankan versi <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{currentVersion}</strong>. Tidak ada pembaruan tertunda.
+                </p>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-left text-xs space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 dark:text-slate-400">Versi Terpasang:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{currentVersion}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 dark:text-slate-400">Status Repositori:</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">fadlirahman1987/siakadpersonal</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsUpdateModalOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          )}
+
+        </div>
+      </ModalDrawer>
 
     </div>
   );

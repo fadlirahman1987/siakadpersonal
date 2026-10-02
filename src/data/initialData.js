@@ -243,6 +243,19 @@ export const initialHolidays = [
 
 export const initialVersionLogs = [
   {
+    version: "v2.9.0",
+    date: "02 Oktober 2026",
+    tag: "Fitur Baru",
+    title: "Tag Cepat Presensi & Jurnal Dashboard, Optimalisasi Ruang Kerja, dan CI/CD Cloud Release",
+    details: [
+      "Tag Aksi Cepat pada Card Jadwal Dashboard: Tombol 1-Tap 'Isi Presensi' dan 'Isi Jurnal' langsung pada jadwal mengajar.",
+      "Indikator Real-time Status Presensi & Jurnal: Deteksi otomatis keterisian absensi (✓ Presensi Terisi X/Y) dan jurnal (✓ Jurnal Terisi) pada sesi hari ini.",
+      "Optimalisasi Layout Dashboard: Penghapusan hero banner ucapan agar widget statistik dan jadwal mengajar tampil lebih luas, fokus, dan bebas scrolling.",
+      "Sinkronisasi Navigasi Subtab Global: Routing cerdas antar modul Presensi, Rekap Nilai, dan Jurnal KBM.",
+      "Konfigurasi GitHub Actions & Auto-Updater: Pipeline rilis otomatis file installer Windows (.exe) dan endpoint pembaruan desktop Tauri."
+    ]
+  },
+  {
     version: "v2.8.0",
     date: "01 Oktober 2026",
     tag: "Fitur Baru",

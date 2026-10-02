@@ -3,14 +3,10 @@ import { useApp } from '../context/AppContext';
 import {
   Calendar,
   Clock,
-  MapPin,
   CheckCircle2,
   Users,
   BookOpen,
-  Sparkles,
-  ArrowRight,
   TrendingUp,
-  AlertCircle,
   Award,
   ChevronRight,
   GraduationCap,
@@ -40,15 +36,6 @@ export const DashboardView = () => {
     lastSyncTime
   } = useApp();
 
-  // Greeting based on time
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 11) return 'Selamat Pagi';
-    if (hour < 15) return 'Selamat Siang';
-    if (hour < 18) return 'Selamat Sore';
-    return 'Selamat Malam';
-  };
-
   // Summary statistics
   const totalClasses = classes.length;
   const totalStudents = students.length;
@@ -65,40 +52,7 @@ export const DashboardView = () => {
   return (
     <div className="space-y-6 pb-24 animate-fade-in">
       
-      {/* 1. Hero Teacher Greeting Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-slate-900 to-indigo-950 border border-emerald-500/20 p-5 sm:p-7 shadow-2xl text-white">
-        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none"></div>
-        <div className="absolute bottom-0 right-1/4 w-32 h-32 rounded-full bg-indigo-500/10 blur-xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold mb-2">
-              <Sparkles size={13} className="text-emerald-400" />
-              <span>SIAKAD Mobile-First Active</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              {getGreeting()}, {schoolSettings?.teacher_name?.split(',')[0] || 'Bapak/Ibu Guru'}!
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-md">
-              Siap mengajar hari ini? Akses presensi 1-sentuhan dan jurnal terintegrasi langsung dari genggaman Anda.
-            </p>
-          </div>
-
-          {/* Quick CTA to Attendance */}
-          <button
-            onClick={() => {
-              setSelectedScheduleId(1);
-              setActiveTab('attendance');
-            }}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 active:scale-95 transition-all self-start sm:self-auto"
-          >
-            <span>Mulai Presensi Cepat</span>
-            <ArrowRight size={16} />
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Quick Stat Tiles with Vibrant Gradients */}
+      {/* Quick Stat Tiles with Vibrant Gradients */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Card 1: Total Kelas */}
         <div className="relative overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-blue-500/20 border border-blue-400/25 transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">

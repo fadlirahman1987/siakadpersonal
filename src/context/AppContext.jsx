@@ -37,6 +37,7 @@ export const AppProvider = ({ children }) => {
 
   // Active Navigation Tab: 'dashboard' | 'attendance' | 'homeroom' | 'ai-tools' | 'settings'
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [attendanceSubTab, setAttendanceSubTab] = useState('attendance'); // 'attendance' | 'grades' | 'journal' | 'journal-history'
   
   // Selected Context (e.g., active schedule or active class)
   const [selectedScheduleId, setSelectedScheduleId] = useState(1);
@@ -1241,6 +1242,8 @@ export const AppProvider = ({ children }) => {
         setTheme,
         activeTab,
         setActiveTab,
+        attendanceSubTab,
+        setAttendanceSubTab,
         selectedScheduleId,
         setSelectedScheduleId,
         selectedDate,

@@ -77,11 +77,14 @@ export const AttendanceView = () => {
     updateTeachingJournal,
     deleteTeachingJournal,
     schoolSettings,
-    showToast
+    showToast,
+    attendanceSubTab,
+    setAttendanceSubTab
   } = useApp();
 
   // Mode View: 'attendance' (Presensi) | 'grades' (Rekap Nilai) | 'journal' (Form Jurnal KBM) | 'journal-history' (Riwayat Jurnal)
-  const [activeSubTab, setActiveSubTab] = useState('attendance');
+  const activeSubTab = attendanceSubTab || 'attendance';
+  const setActiveSubTab = setAttendanceSubTab;
   const [searchQuery, setSearchQuery] = useState('');
 
   // Initial Class & Subject filters

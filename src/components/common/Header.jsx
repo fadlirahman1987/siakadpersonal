@@ -140,29 +140,31 @@ export const Header = () => {
         </nav>
 
         {/* Right: Quick Controls */}
-        <div className="flex items-center gap-2">
-          {/* Cloud Sync Button */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Cloud Sync Icon Button (Compact Icon-Only) */}
           <button
             onClick={() => setIsSyncModalOpen(true)}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-sm ${
+            className={`relative p-2 sm:p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-sm ${
               isSyncingToCloud || isSyncingFromCloud
                 ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-700 dark:text-indigo-300'
                 : isSupabaseConfigured
                 ? 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
                 : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
             }`}
-            title="Sinkronisasi Data Online (Upload & Tarik dari Supabase Cloud)"
+            title={
+              isSupabaseConfigured
+                ? `Sinkronisasi Cloud (${lastSyncTime ? `Terakhir: ${lastSyncTime}` : 'Online'})`
+                : 'Sinkronisasi Cloud (Supabase Offline / Belum Dikonfigurasi)'
+            }
+            aria-label="Sinkronisasi Cloud"
           >
             {isSyncingToCloud || isSyncingFromCloud ? (
-              <RefreshCw size={14} className="animate-spin text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <RefreshCw size={17} className="animate-spin text-indigo-600 dark:text-indigo-400 shrink-0" />
             ) : (
-              <Cloud size={14} className={isSupabaseConfigured ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} />
+              <Cloud size={17} className={isSupabaseConfigured ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} />
             )}
-            <span className="hidden sm:inline whitespace-nowrap">
-              {isSyncingToCloud ? 'Mengunggah...' : isSyncingFromCloud ? 'Menarik Data...' : 'Sinkronisasi'}
-            </span>
             {isSupabaseConfigured && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 shrink-0"></span>
             )}
           </button>
 
@@ -180,31 +182,36 @@ export const Header = () => {
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 transition-all active:scale-95 shadow-sm cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 transition-all active:scale-95 shadow-sm cursor-pointer"
             title={theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
+            aria-label="Toggle Theme"
           >
             {theme === 'dark' ? (
-              <Sun size={18} className="text-amber-400" />
+              <Sun size={17} className="text-amber-400" />
             ) : (
-              <Moon size={18} className="text-indigo-600" />
+              <Moon size={17} className="text-indigo-600" />
             )}
           </button>
 
-          {/* Teacher Profile Avatar / Settings Shortcut */}
+          {/* Teacher Profile Avatar / Settings & Master Data Shortcut */}
           <button
             onClick={() => setActiveTab('settings')}
-            className="flex items-center gap-2.5 p-1.5 pr-2.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-800/60 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer"
-            title="Pengaturan Profil & Master Data"
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-xl border transition-all cursor-pointer shadow-sm active:scale-95 ${
+              activeTab === 'settings'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-emerald-500/10'
+                : 'bg-slate-100/80 hover:bg-slate-200/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/90 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+            }`}
+            title="Buka Pengaturan Profil & Master Data"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs shadow-md">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-xs shadow-md shrink-0">
               {schoolSettings?.teacher_name?.charAt(0) || 'G'}
             </div>
-            <div className="hidden xl:block text-left">
-              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+            <div className="hidden sm:block text-left">
+              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[100px] md:max-w-[140px]">
                 {schoolSettings?.teacher_name?.split(',')[0] || 'Guru'}
               </div>
-              <div className="text-[10px] text-slate-400 leading-tight">
-                NIP: {schoolSettings?.teacher_nip || '-'}
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                Profil & Data
               </div>
             </div>
           </button>

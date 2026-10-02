@@ -14,7 +14,10 @@ import {
   CloudUpload,
   CloudDownload,
   RefreshCw,
-  Database
+  Database,
+  MapPin,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 
 export const DashboardView = () => {

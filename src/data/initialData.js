@@ -1,16 +1,16 @@
 export const initialSchoolSettings = {
-  school_name: "SMK NEGERI 1 TEKNOLOGI NUSANTARA",
-  governing_body: "PEMERINTAH PROVINSI DAERAH KHUSUS IBUKOTA JAKARTA\nDINAS PENDIDIKAN",
+  school_name: "SMK NEGERI 2 SEBULU",
+  governing_body: "PEMERINTAH PROVINSI KALIMANTAN TIMUR\nDINAS PENDIDIKAN DAN KEBUDAYAAN",
   npsn: "20109988",
   postal_code: "12340",
-  address: "Jl. Pendidikan V No. 45, Kebayoran Baru, Jakarta Selatan",
+  address: "Jl. Pangeran Antasari, RT 20, Desa Manunggal Daya, Kecamatan Sebulu, Kutai Kartanegara, Kalimantan Timur",
   phone: "(021) 7890123",
-  email: "info@smkn1teknologi.sch.id",
-  website: "https://smkn1teknologi.sch.id",
-  principal_name: "Drs. H. Bambang Sujatmiko, M.Pd.",
-  principal_nip: "19680817 199303 1 005",
-  teacher_name: "Ryu Q, S.Kom., M.T.",
-  teacher_nip: "19881110 201502 1 002",
+  email: "info@smkn2sebulu.sch.id",
+  website: "https://smkn2sebulu.sch.id",
+  principal_name: "Fadli Rahman, S.Pd",
+  principal_nip: "19870319 201903 1 004",
+  teacher_name: "Fadli Rahman, S.Pd",
+  teacher_nip: "19870319 201903 1 004",
   logo_url: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=120&auto=format&fit=crop&q=80"
 };
 

@@ -15,14 +15,7 @@ import {
   Calendar,
   ChevronDown,
   CheckCircle2,
-  AlertCircle,
-  Cloud,
-  CloudUpload,
-  CloudDownload,
-  RefreshCw,
-  Database,
-  ExternalLink,
-  ShieldCheck
+  AlertCircle
 } from 'lucide-react';
 
 export const Header = () => {
@@ -36,17 +29,10 @@ export const Header = () => {
     academicYears,
     activeAcademicYear,
     activeSemester,
-    switchAcademicPeriod,
-    syncToCloud,
-    pullFromCloud,
-    isSyncingToCloud,
-    isSyncingFromCloud,
-    isSupabaseConfigured,
-    lastSyncTime
+    switchAcademicPeriod
   } = useApp();
 
   const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [tempYear, setTempYear] = useState(activeAcademicYear);
   const [tempSemester, setTempSemester] = useState(activeSemester);
 
@@ -141,33 +127,6 @@ export const Header = () => {
 
         {/* Right: Quick Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Cloud Sync Icon Button (Compact Icon-Only) */}
-          <button
-            onClick={() => setIsSyncModalOpen(true)}
-            className={`relative p-2 sm:p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-sm ${
-              isSyncingToCloud || isSyncingFromCloud
-                ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-700 dark:text-indigo-300'
-                : isSupabaseConfigured
-                ? 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
-            }`}
-            title={
-              isSupabaseConfigured
-                ? `Sinkronisasi Cloud (${lastSyncTime ? `Terakhir: ${lastSyncTime}` : 'Online'})`
-                : 'Sinkronisasi Cloud (Supabase Offline / Belum Dikonfigurasi)'
-            }
-            aria-label="Sinkronisasi Cloud"
-          >
-            {isSyncingToCloud || isSyncingFromCloud ? (
-              <RefreshCw size={17} className="animate-spin text-indigo-600 dark:text-indigo-400 shrink-0" />
-            ) : (
-              <Cloud size={17} className={isSupabaseConfigured ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} />
-            )}
-            {isSupabaseConfigured && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 shrink-0"></span>
-            )}
-          </button>
-
           {/* Active Academic Year Badge (Clickable Quick Switcher) */}
           <button
             onClick={handleOpenPeriodModal}
@@ -325,146 +284,6 @@ export const Header = () => {
                 Terapkan Periode
               </button>
             </div>
-          </div>
-        </div>
-      </ModalDrawer>
-
-      {/* Modal Sinkronisasi Data Online (Supabase Cloud) */}
-      <ModalDrawer
-        isOpen={isSyncModalOpen}
-        onClose={() => setIsSyncModalOpen(false)}
-        title="Sinkronisasi Data Online & Cloud"
-        maxWidth="max-w-xl"
-      >
-        <div className="space-y-4 text-left">
-          {/* Status Bar */}
-          <div className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 text-xs ${
-            isSupabaseConfigured
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
-              : 'bg-amber-50 dark:bg-amber-950/40 border-amber-500/30 text-amber-900 dark:text-amber-200'
-          }`}>
-            <div className="flex items-center gap-2.5">
-              <div className={`p-2 rounded-xl shrink-0 ${
-                isSupabaseConfigured ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-              }`}>
-                <Cloud size={18} />
-              </div>
-              <div>
-                <p className="font-extrabold">
-                  {isSupabaseConfigured ? 'Supabase Cloud Terhubung' : 'Supabase Belum Dikonfigurasi'}
-                </p>
-                <p className="text-[11px] opacity-80 mt-0.5">
-                  {lastSyncTime ? `Terakhir Sinkron: ${lastSyncTime}` : 'Belum pernah disinkronkan'}
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsSyncModalOpen(false);
-                setActiveTab('settings');
-              }}
-              className="text-xs font-bold underline shrink-0 hover:opacity-80"
-            >
-              Pengaturan API
-            </button>
-          </div>
-
-          {/* Two Main Action Buttons: Upload & Tarik Data */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            {/* 1. Upload Data ke Cloud */}
-            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3 flex flex-col justify-between">
-              <div className="space-y-1.5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                  <CloudUpload size={22} />
-                </div>
-                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
-                  Upload Data ke Cloud
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Unggah seluruh database lokal (14 tabel) dari perangkat ini ke Supabase Cloud secara instan.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                disabled={isSyncingToCloud || isSyncingFromCloud}
-                onClick={async () => {
-                  await syncToCloud();
-                }}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all cursor-pointer"
-              >
-                {isSyncingToCloud ? (
-                  <>
-                    <RefreshCw size={14} className="animate-spin" />
-                    <span>Mengunggah Data...</span>
-                  </>
-                ) : (
-                  <>
-                    <CloudUpload size={15} />
-                    <span>Upload ke Cloud Sekarang</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* 2. Tarik Data dari Cloud */}
-            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3 flex flex-col justify-between">
-              <div className="space-y-1.5">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
-                  <CloudDownload size={22} />
-                </div>
-                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
-                  Tarik Data Online
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Unduh data terbaru dari Supabase Cloud untuk memperbarui database lokal di perangkat ini.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                disabled={isSyncingToCloud || isSyncingFromCloud}
-                onClick={async () => {
-                  await pullFromCloud();
-                }}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-extrabold text-xs shadow-md shadow-indigo-900/20 active:scale-95 transition-all cursor-pointer"
-              >
-                {isSyncingFromCloud ? (
-                  <>
-                    <RefreshCw size={14} className="animate-spin" />
-                    <span>Menarik Data...</span>
-                  </>
-                ) : (
-                  <>
-                    <CloudDownload size={15} />
-                    <span>Tarik Data Online</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Info & Data Coverage */}
-          <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
-            <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400" />
-              <span>Cakupan Sinkronisasi 14 Tabel Database:</span>
-            </p>
-            <p className="leading-relaxed">
-              Profil Sekolah, Tahun Ajaran, Rombel/Kelas, Siswa, Mapel, Jadwal Rutin, Presensi Harian, Jurnal Mengajar, Nilai Capaian Siswa, Agenda Bimbingan BK, Siswa Binaan, Kunjungan Rumah, Kalender Libur, dan Rekap Absensi Walas.
-            </p>
-          </div>
-
-          <div className="pt-2 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setIsSyncModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-            >
-              Tutup
-            </button>
           </div>
         </div>
       </ModalDrawer>

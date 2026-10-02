@@ -27,7 +27,8 @@ import {
   AlertCircle,
   Check,
   History,
-  Search
+  Search,
+  Heart
 } from 'lucide-react';
 
 export const DashboardView = () => {
@@ -474,14 +475,14 @@ export const DashboardView = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('ai-tools')}
+              onClick={() => setActiveTab('about')}
               className="flex flex-col items-center justify-center p-4 rounded-2xl glass-card hover:bg-slate-100 dark:hover:bg-slate-800/80 text-center transition-all active:scale-95 group"
             >
-              <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-300 group-hover:scale-110 transition-transform mb-2">
-                <Sparkles size={22} />
+              <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform mb-2">
+                <Heart size={22} className="fill-rose-500/20" />
               </div>
-              <span className="font-bold text-xs text-slate-800 dark:text-slate-200">Kalkulator RPE & AI</span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Pekan Efektif Pintar</span>
+              <span className="font-bold text-xs text-slate-800 dark:text-slate-200">About Me & Donasi</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Pengembang & Dukungan</span>
             </button>
 
           </div>

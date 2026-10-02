@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { KopSurat } from '../components/common/KopSurat';
+import { exportWalasAttendanceToExcel } from '../utils/excelExport';
 import {
   GraduationCap,
   Calendar,
@@ -20,7 +21,8 @@ import {
   FileText,
   Layers,
   ChevronRight,
-  Settings
+  Settings,
+  Download
 } from 'lucide-react';
 
 export const WalasView = () => {
@@ -275,6 +277,29 @@ export const WalasView = () => {
       studentsWithWarning
     };
   }, [classStudents, studentSemesterStats]);
+
+  // Handle Excel (.xlsx) export for Walas attendance
+  const handleExportWalasExcel = (overrideType = null) => {
+    try {
+      const type = overrideType || printType || 'semester';
+      exportWalasAttendanceToExcel({
+        selectedClass,
+        academicYear,
+        selectedSemester,
+        activeMonth,
+        printType: type,
+        semesterMonths,
+        classStudents,
+        getRecord,
+        studentSemesterStats,
+        schoolSettings
+      });
+      showToast(`Rekapitulasi Absensi ${type === 'semester' ? '1 Semester' : `Bulan ${activeMonth}`} berhasil diekspor ke Excel (.xlsx)!`, 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Gagal mengekspor data ke Excel: ' + err.message, 'error');
+    }
+  };
 
   const homeroomClass = classes.find(c => c.is_homeroom_class);
   const isHomeroomTeacher = Boolean(homeroomClass);
@@ -788,13 +813,24 @@ export const WalasView = () => {
                 </p>
               </div>
 
-              <button
-                onClick={() => setActiveMode('print')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow cursor-pointer"
-              >
-                <Printer size={14} />
-                <span>Cetak Dokumen Leger Absensi</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleExportWalasExcel('semester')}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                  title="Ekspor matriks absensi semester ke format Microsoft Excel (.xlsx)"
+                >
+                  <FileSpreadsheet size={14} />
+                  <span>Export to XLSX</span>
+                </button>
+                <button
+                  onClick={() => setActiveMode('print')}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow cursor-pointer"
+                >
+                  <Printer size={14} />
+                  <span>Cetak Dokumen Leger Absensi</span>
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
@@ -944,6 +980,16 @@ export const WalasView = () => {
                   Rekap Bulan {activeMonth}
                 </button>
               </div>
+
+              <button
+                type="button"
+                onClick={() => handleExportWalasExcel()}
+                className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                title="Ekspor dokumen rekap absensi ke format Microsoft Excel (.xlsx)"
+              >
+                <FileSpreadsheet size={15} />
+                <span>Export to XLSX</span>
+              </button>
 
               <button
                 type="button"

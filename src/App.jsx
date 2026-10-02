@@ -10,6 +10,7 @@ import { WalasView } from './views/WalasView';
 import { HomeroomView } from './views/HomeroomView';
 import { AIToolsView } from './views/AIToolsView';
 import { SettingsView } from './views/SettingsView';
+import { AboutView } from './views/AboutView';
 
 export const App = () => {
   const { activeTab, classes } = useApp();
@@ -30,6 +31,8 @@ export const App = () => {
         return <AIToolsView />;
       case 'settings':
         return <SettingsView />;
+      case 'about':
+        return <AboutView />;
       default:
         return <DashboardView />;
     }

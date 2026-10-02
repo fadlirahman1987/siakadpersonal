@@ -46,6 +46,7 @@ export const Header = () => {
       case 'homeroom': return 'Guru Wali & Bimbingan';
       case 'ai-tools': return 'AI Tools Hub';
       case 'settings': return 'Master Data & Profil';
+      case 'about': return 'Tentang Pengembang & Donasi';
       default: return 'SIAKAD Mandiri';
     }
   };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { ModalDrawer } from '../components/common/ModalDrawer';
 import { KopSurat } from '../components/common/KopSurat';
+import { exportTeachingJournalsToExcel } from '../utils/excelExport';
 import {
   Calendar,
   Clock,
@@ -77,6 +78,8 @@ export const AttendanceView = () => {
     updateTeachingJournal,
     deleteTeachingJournal,
     schoolSettings,
+    activeAcademicYear,
+    activeSemester,
     showToast,
     attendanceSubTab,
     setAttendanceSubTab
@@ -419,6 +422,28 @@ export const AttendanceView = () => {
     }
   };
 
+  // Export Teaching Journals to Excel (.xlsx)
+  const handleExportJournalsExcel = () => {
+    try {
+      exportTeachingJournalsToExcel({
+        teachingJournals,
+        schedules,
+        classes,
+        subjects,
+        schoolSettings,
+        academicYear: activeAcademicYear,
+        activeSemester,
+        filterClass: historyFilterClass,
+        filterSubject: historyFilterSubject,
+        searchQuery: historySearch
+      });
+      showToast('Rekapitulasi Jurnal Mengajar KBM berhasil diekspor ke Excel (.xlsx)!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Gagal mengekspor jurnal ke Excel: ' + err.message, 'error');
+    }
+  };
+
   // Grade Calculations Helper
   const calculateFinalGrade = (studentGrade, kkmValue = (kkm || 75)) => {
     return calculateStudentGrade(studentGrade, kkmValue, assessmentConfig);
@@ -596,9 +621,9 @@ export const AttendanceView = () => {
           {[
             { id: 'attendance', label: 'Presensi', icon: CheckCheck },
             { id: 'attendance-recap', label: 'Rekap Absensi (Semester)', icon: FileText },
-            { id: 'grades', label: 'Rekap Nilai', icon: BarChart3 },
             { id: 'journal', label: 'Form Jurnal', icon: BookOpen },
             { id: 'journal-history', label: 'Riwayat Jurnal', icon: History },
+            { id: 'grades', label: 'Rekap Nilai', icon: BarChart3 },
           ].map((item) => {
             const Icon = item.icon;
             const isActive = activeSubTab === item.id;
@@ -655,29 +680,29 @@ export const AttendanceView = () => {
               </div>
             </div>
 
-            {/* Action Buttons: Simpan Presensi, Set All Present, Cetak Presensi PDF, Cetak Semua Rekap Absensi & Jump to Journal Form */}
+            {/* Action Buttons: Simpan Presensi, Set All Present, Cetak Presensi PDF & Jump to Journal Form */}
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleSaveAttendance}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                 title="Simpan status presensi tanggal ini"
               >
-                <Save size={16} />
+                <Save size={15} />
                 <span>Simpan Presensi</span>
               </button>
 
               <button
                 onClick={() => setAllPresent(activeSchedule.id, selectedDate, classStudents)}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs active:scale-95 transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                 title="Set semua siswa hadir dalam 1 klik"
               >
-                <CheckCheck size={16} className="text-emerald-600 dark:text-emerald-400" />
+                <CheckCheck size={15} />
                 <span>Set Hadir</span>
               </button>
 
               <button
                 onClick={() => setIsPrintAttendanceModalOpen(true)}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs active:scale-95 transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                 title="Cetak Presensi Sesi Ini (PDF)"
               >
                 <Printer size={15} />
@@ -685,19 +710,10 @@ export const AttendanceView = () => {
               </button>
 
               <button
-                onClick={() => setIsPrintAllAttendanceModalOpen(true)}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
-                title="Cetak Rekapitulasi Semua Absensi Semester (PDF)"
-              >
-                <FileText size={15} />
-                <span>Cetak Semua Rekap Absensi</span>
-              </button>
-
-              <button
                 onClick={() => setActiveSubTab('journal')}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs active:scale-95 transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
               >
-                <BookOpen size={15} className="text-emerald-600 dark:text-emerald-400" />
+                <BookOpen size={15} />
                 <span>Isi Jurnal</span>
               </button>
             </div>
@@ -835,29 +851,29 @@ export const AttendanceView = () => {
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={handleSaveAttendance}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                   title="Simpan rekap absensi semester"
                 >
                   <Save size={15} />
-                  <span>Simpan Rekap Absensi</span>
+                  <span>Simpan</span>
                 </button>
 
                 <button
                   onClick={exportAttendanceRecapToCSV}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs active:scale-95 transition-all shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                   title="Unduh file Excel / CSV Rekap Absensi Semester"
                 >
-                  <FileSpreadsheet size={15} className="text-emerald-600 dark:text-emerald-400" />
-                  <span>Ekspor CSV</span>
+                  <FileSpreadsheet size={15} />
+                  <span>Eksport</span>
                 </button>
 
                 <button
                   onClick={() => setIsPrintAllAttendanceModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                   title="Cetak Berkas Rekapitulasi Presensi Resmi (PDF)"
                 >
                   <Printer size={15} />
-                  <span>Cetak Rekap (PDF)</span>
+                  <span>Print</span>
                 </button>
               </div>
             </div>
@@ -1170,17 +1186,17 @@ export const AttendanceView = () => {
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={exportAttendanceRecapToCSV}
-                  className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
                 >
                   <FileSpreadsheet size={14} />
-                  <span>Ekspor CSV</span>
+                  <span>Eksport</span>
                 </button>
                 <button
                   onClick={() => setIsPrintAllAttendanceModalOpen(true)}
-                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                  className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
                 >
                   <Printer size={14} />
-                  <span>Cetak Rekap (PDF)</span>
+                  <span>Print</span>
                 </button>
               </div>
             </div>
@@ -1215,30 +1231,20 @@ export const AttendanceView = () => {
                 </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Save All Grades Button */}
-                <button
-                  onClick={handleSaveAllGrades}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
-                  title="Simpan seluruh rekap nilai siswa kelas ini"
-                >
-                  <Save size={15} />
-                  <span>Simpan Rekap Nilai</span>
-                </button>
-
+              {/* Action Buttons (Single Row, Unified Emerald Theme) */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none flex-nowrap shrink-0">
                 {/* Custom Weights & Columns Manager Button */}
                 <button
                   onClick={() => setIsAssessmentConfigModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700/50 font-bold text-xs active:scale-95 transition-all shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0"
                   title="Atur Bobot Kategori dan Tambah/Hapus Kolom Penilaian"
                 >
-                  <SlidersHorizontal size={14} className="text-emerald-600 dark:text-emerald-400" />
+                  <SlidersHorizontal size={14} />
                   <span>Atur Bobot & Kolom</span>
                 </button>
 
                 {/* KKM Pill & Quick Edit */}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-300 text-xs font-bold">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shrink-0">
                   <span>KKM:</span>
                   <span className="font-black text-sm text-emerald-600 dark:text-emerald-400">{kkm || 75}</span>
                   <button
@@ -1246,29 +1252,41 @@ export const AttendanceView = () => {
                       setTempKkm(kkm || 75);
                       setIsKkmEditOpen(true);
                     }}
-                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-600 dark:text-slate-300"
+                    className="p-1 hover:bg-emerald-200/60 dark:hover:bg-emerald-900/60 rounded-lg transition-colors text-emerald-700 dark:text-emerald-300 cursor-pointer"
                     title="Ubah Nilai KKM"
                   >
                     <Edit3 size={12} />
                   </button>
                 </div>
 
-                {/* Export CSV */}
+                {/* Save All Grades Button */}
                 <button
-                  onClick={exportGradesToCSV}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs active:scale-95 transition-all shadow-sm"
+                  onClick={handleSaveAllGrades}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  title="Simpan seluruh rekap nilai siswa kelas ini"
                 >
-                  <FileSpreadsheet size={15} className="text-emerald-600 dark:text-emerald-400" />
-                  <span>Ekspor CSV</span>
+                  <Save size={14} />
+                  <span>Simpan</span>
                 </button>
 
                 {/* Print PDF Leger */}
                 <button
                   onClick={() => setIsPrintLegerModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  title="Cetak Berkas Leger Rekap Nilai Resmi (PDF)"
                 >
-                  <Printer size={15} />
-                  <span>Cetak Leger (PDF)</span>
+                  <Printer size={14} />
+                  <span>Cetak</span>
+                </button>
+
+                {/* Export CSV */}
+                <button
+                  onClick={exportGradesToCSV}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  title="Ekspor Leger Nilai ke CSV"
+                >
+                  <FileSpreadsheet size={14} />
+                  <span>Eksport</span>
                 </button>
               </div>
             </div>
@@ -1533,17 +1551,17 @@ export const AttendanceView = () => {
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={exportGradesToCSV}
-                  className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
                 >
                   <FileSpreadsheet size={14} />
-                  <span>Ekspor CSV</span>
+                  <span>Eksport</span>
                 </button>
                 <button
                   onClick={handleSaveAllGrades}
-                  className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                  className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
                 >
                   <Save size={14} />
-                  <span>Simpan Rekap Nilai</span>
+                  <span>Simpan</span>
                 </button>
               </div>
             </div>
@@ -1698,7 +1716,7 @@ export const AttendanceView = () => {
                       ...journalForm
                     });
                   }}
-                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all"
+                  className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                 >
                   <Printer size={15} />
                   <span>Cetak Jurnal Sesi Ini</span>
@@ -1706,7 +1724,7 @@ export const AttendanceView = () => {
 
                 <button
                   type="submit"
-                  className="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
                 >
                   <Save size={15} />
                   <span>{editingJournalId || existingJournal ? 'Perbarui Catatan Jurnal KBM' : 'Simpan Catatan Jurnal KBM'}</span>
@@ -1734,13 +1752,25 @@ export const AttendanceView = () => {
               </p>
             </div>
 
-            <button
-              onClick={() => setIsPrintAllJournalsModalOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md shadow-emerald-900/20 active:scale-95 transition-all self-start sm:self-auto"
-            >
-              <Printer size={14} />
-              <span>Cetak Rekap Semua Jurnal (PDF)</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={handleExportJournalsExcel}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+                title="Ekspor rekapitulasi jurnal mengajar ke format Microsoft Excel (.xlsx)"
+              >
+                <FileSpreadsheet size={14} />
+                <span>Export to Excel</span>
+              </button>
+
+              <button
+                onClick={() => setIsPrintAllJournalsModalOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+              >
+                <Printer size={14} />
+                <span>Cetak</span>
+              </button>
+            </div>
           </div>
 
           {/* History Search & Class/Subject Filters */}
@@ -1992,7 +2022,7 @@ export const AttendanceView = () => {
             <div className="flex justify-end gap-2 pt-4 border-t no-print">
               <button
                 onClick={() => window.print()}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-slate-800"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
                 <Printer size={14} />
                 <span>Cetak / Simpan PDF</span>
@@ -2164,7 +2194,7 @@ export const AttendanceView = () => {
             <div className="flex justify-end gap-2 pt-4 border-t no-print">
               <button
                 onClick={() => window.print()}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-slate-800"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
                 <Printer size={14} />
                 <span>Cetak Rekap Absensi (PDF)</span>
@@ -2247,8 +2277,18 @@ export const AttendanceView = () => {
 
             <div className="flex justify-end gap-2 pt-4 border-t no-print">
               <button
+                type="button"
+                onClick={handleExportJournalsExcel}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+                title="Ekspor seluruh rekap jurnal KBM ke Microsoft Excel (.xlsx)"
+              >
+                <FileSpreadsheet size={14} />
+                <span>Export to XLSX</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => window.print()}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-slate-800"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
                 <Printer size={14} />
                 <span>Cetak Rekap Jurnal (PDF)</span>
@@ -2378,7 +2418,7 @@ export const AttendanceView = () => {
             <div className="flex justify-end gap-2 pt-4 border-t no-print">
               <button
                 onClick={() => window.print()}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-slate-800"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
                 <Printer size={14} />
                 <span>Cetak / Simpan PDF</span>
@@ -2455,7 +2495,7 @@ export const AttendanceView = () => {
             <div className="flex justify-end gap-2 pt-4 border-t no-print">
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
                 <Printer size={14} />
                 <span>Cetak Jurnal (PDF)</span>

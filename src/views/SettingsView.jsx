@@ -1104,17 +1104,16 @@ CREATE POLICY "Allow anon all on walas_monthly_attendance" ON walas_monthly_atte
         </p>
       </div>
 
-      {/* 2. Responsive Horizontal Scroll Navigation Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-none -mx-2 px-2 sm:mx-0 sm:px-0">
+      {/* 2. Responsive Flexible Navigation Tabs */}
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-inner">
         {[
-          { id: 'academic-year', label: 'Tahun Ajaran & Semester', icon: Calendar },
+          { id: 'academic-year', label: 'Tahun Ajaran', icon: Calendar },
           { id: 'classes', label: 'Kelas & Siswa', icon: Users },
-          { id: 'school', label: 'Profil & KOP', icon: School },
+          { id: 'school', label: 'Profil Sekolah', icon: School },
           { id: 'subjects', label: 'Mapel & Jadwal', icon: BookOpen },
           { id: 'holidays', label: 'Kalender Libur', icon: Calendar },
           { id: 'supabase', label: 'Supabase Cloud', icon: Cloud },
-          { id: 'backup', label: 'Cadangan & Backup JSON', icon: Database },
-          { id: 'changelog', label: 'Version Log', icon: History },
+          { id: 'backup', label: 'Backup & Restore', icon: Database },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1123,10 +1122,10 @@ CREATE POLICY "Allow anon all on walas_monthly_attendance" ON walas_monthly_atte
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs whitespace-nowrap transition-all shrink-0 active:scale-95 ${
+              className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl font-bold text-xs whitespace-nowrap transition-all cursor-pointer active:scale-95 ${
                 isActive
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'bg-slate-200/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-300 dark:border-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/20'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
               }`}
             >
               <Icon size={14} className="shrink-0" />

@@ -25,7 +25,9 @@ import {
   ExternalLink,
   Tag,
   AlertCircle,
-  Check
+  Check,
+  History,
+  Search
 } from 'lucide-react';
 
 export const DashboardView = () => {
@@ -56,6 +58,8 @@ export const DashboardView = () => {
   const currentVersion = versionLogs?.[0]?.version || 'v2.9.0';
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isVersionLogModalOpen, setIsVersionLogModalOpen] = useState(false);
+  const [versionLogSearch, setVersionLogSearch] = useState('');
   const [updateResult, setUpdateResult] = useState({
     checked: false,
     hasUpdate: false,
@@ -163,6 +167,18 @@ export const DashboardView = () => {
   const presentCount = todayRecord ? Object.values(todayRecord.records).filter(v => v === 'H').length : 0;
   const totalInClass = 8;
   const attendanceRate = totalInClass > 0 ? Math.round((presentCount / totalInClass) * 100) : 0;
+
+  // Filter version logs for modal
+  const filteredVersionLogs = (versionLogs || []).filter(log => {
+    if (!log) return false;
+    const q = (versionLogSearch || '').toLowerCase();
+    return (
+      String(log.title || '').toLowerCase().includes(q) ||
+      String(log.version || '').toLowerCase().includes(q) ||
+      String(log.tag || '').toLowerCase().includes(q) ||
+      (log.details || []).some(d => String(d).toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="space-y-6 pb-24 animate-fade-in">
@@ -378,7 +394,7 @@ export const DashboardView = () => {
 
         {/* Right Column (5 cols): Quick Action Launcher */}
         <div className="lg:col-span-5 space-y-3">
-          {/* Header Aksi Cepat + Versi App & Tombol Cek Update */}
+          {/* Header Aksi Cepat + Versi App & Tombol Version Log + Cek Update */}
           <div className="flex items-center justify-between px-1 flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">Aksi Cepat Guru</h3>
@@ -388,16 +404,30 @@ export const DashboardView = () => {
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={handleCheckUpdate}
-              disabled={isCheckingUpdate}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer"
-              title="Periksa ketersediaan pembaruan versi baru di GitHub"
-            >
-              <RefreshCw size={13} className={isCheckingUpdate ? 'animate-spin text-emerald-600 dark:text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'} />
-              <span>{isCheckingUpdate ? 'Memeriksa...' : 'Cek Update'}</span>
-            </button>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Tombol Version Log */}
+              <button
+                type="button"
+                onClick={() => setIsVersionLogModalOpen(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer"
+                title="Buka Catatan Log Versi & Riwayat Pembaruan"
+              >
+                <History size={13} className="text-emerald-600 dark:text-emerald-400" />
+                <span>Version Log</span>
+              </button>
+
+              {/* Tombol Cek Update */}
+              <button
+                type="button"
+                onClick={handleCheckUpdate}
+                disabled={isCheckingUpdate}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-sm transition-all active:scale-95 cursor-pointer"
+                title="Periksa ketersediaan pembaruan versi baru di GitHub"
+              >
+                <RefreshCw size={12} className={isCheckingUpdate ? 'animate-spin text-white' : 'text-white'} />
+                <span>{isCheckingUpdate ? 'Memeriksa...' : 'Cek Update'}</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -663,6 +693,97 @@ export const DashboardView = () => {
             </div>
           )}
 
+        </div>
+      </ModalDrawer>
+
+      {/* Modal Riwayat Version Log Aplikasi */}
+      <ModalDrawer
+        isOpen={isVersionLogModalOpen}
+        onClose={() => {
+          setIsVersionLogModalOpen(false);
+          setVersionLogSearch('');
+        }}
+        title="Riwayat Versi & Catatan Rilis (Changelog)"
+        maxWidth="max-w-2xl"
+      >
+        <div className="space-y-4 text-left">
+          {/* Search Input for Version Log */}
+          <div className="relative">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari versi, fitur, atau kata kunci pembaruan..."
+              value={versionLogSearch}
+              onChange={(e) => setVersionLogSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+            />
+          </div>
+
+          {/* Version List */}
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            {filteredVersionLogs.length === 0 ? (
+              <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-xs">
+                Tidak ada riwayat versi yang cocok dengan pencarian.
+              </div>
+            ) : (
+              filteredVersionLogs.map((log, idx) => (
+                <div
+                  key={log.version || idx}
+                  className={`p-4 rounded-2xl border transition-all ${
+                    idx === 0
+                      ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-700/50 shadow-sm'
+                      : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/70'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-slate-200/80 dark:border-slate-700/60">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-lg text-xs font-black ${
+                        idx === 0
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
+                      }`}>
+                        {log.version}
+                      </span>
+                      {idx === 0 && (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                          Versi Terkini
+                        </span>
+                      )}
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200/80 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300">
+                        {log.tag}
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      {log.date}
+                    </span>
+                  </div>
+
+                  <h5 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white pt-2">
+                    {log.title}
+                  </h5>
+
+                  <ul className="space-y-1.5 pt-2">
+                    {(log.details || []).map((detail, dIdx) => (
+                      <li key={dIdx} className="text-xs text-slate-600 dark:text-slate-300 flex items-start gap-2 leading-relaxed">
+                        <span className="text-emerald-500 font-bold shrink-0 mt-0.5">•</span>
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsVersionLogModalOpen(false)}
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Tutup
+            </button>
+          </div>
         </div>
       </ModalDrawer>
 

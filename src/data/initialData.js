@@ -243,6 +243,18 @@ export const initialHolidays = [
 
 export const initialVersionLogs = [
   {
+    version: "v2.10.0",
+    date: "02 Oktober 2026",
+    tag: "UI & Fitur",
+    title: "Pemeriksaan Update Online di Beranda, Dialog Changelog Mandiri, dan Penyempurnaan Navigasi Header",
+    details: [
+      "Fitur Cek Update Interaktif: Pemeriksaan versi rilis terbaru langsung dari Beranda dengan modal perbandingan versi & tautan unduh installer (.exe).",
+      "Modal Version Log di Beranda: Akses riwayat pembaruan aplikasi langsung di samping badge versi lengkap dengan fitur pencarian kata kunci.",
+      "Penyempurnaan Navigasi Header: Penghapusan tombol sinkronisasi cloud di bar atas agar profil guru dan kontrol utama tampil ideal, lega, dan proporsional.",
+      "Tata Letak Master Data Fleksibel: Peringkasan label tab dan desain adaptif flex-wrap yang bebas dari masalah teks terpotong di layar desktop."
+    ]
+  },
+  {
     version: "v2.9.0",
     date: "02 Oktober 2026",
     tag: "Fitur Baru",
